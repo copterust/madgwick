@@ -63,11 +63,11 @@ impl Marg {
                 2.0 * self.q.2,
                 2.0 * self.q.3);
 
-		    let q0_4 = 4.0 * self.q.0;
-		    let q1_4 = 4.0 * self.q.1;
-		    let q2_4 = 4.0 * self.q.2;
-		    let q1_8 = 8.0 * self.q.1;
-		    let q2_8 = 8.0 * self.q.2;
+            let q0_4 = 4.0 * self.q.0;
+            let q1_4 = 4.0 * self.q.1;
+            let q2_4 = 4.0 * self.q.2;
+            let q1_8 = 8.0 * self.q.1;
+            let q2_8 = 8.0 * self.q.2;
 
             let q0q0 = self.q.0 * self.q.0;
             let q1q1 = self.q.1 * self.q.1;
