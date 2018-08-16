@@ -41,6 +41,67 @@ impl Marg {
         }
     }
 
+    /// Updates the IMU filter and returns the current estimate
+    /// - `g`, gyroscope readings
+    /// - `a`, accelerometer readings
+    pub fn update_imu(&mut self, g: F32x3, a: F32x3) -> Quaternion {
+	    // Rate of change of quaternion from gyroscope
+        let mut q_dot = Quaternion(
+            0.5 * (-self.q.1 * g.x - self.q.2 * g.y - self.q.3 * g.z),
+	        0.5 * ( self.q.0 * g.x + self.q.2 * g.z - self.q.3 * g.y),
+	        0.5 * ( self.q.0 * g.y - self.q.1 * g.z + self.q.3 * g.x),
+	        0.5 * ( self.q.0 * g.z + self.q.1 * g.y - self.q.2 * g.x)
+        );
+
+        let mut a = a;
+        if !((0.0 == a.x) && (0.0 == a.y) && (0.0 == a.z)) {
+            // Normalise accelerometer measurement
+            a *= rsqrt(a.norm());
+            let q2 = Quaternion(
+                2.0 * self.q.0,
+                2.0 * self.q.1,
+                2.0 * self.q.2,
+                2.0 * self.q.3);
+
+		    let q0_4 = 4.0 * self.q.0;
+		    let q1_4 = 4.0 * self.q.1;
+		    let q2_4 = 4.0 * self.q.2;
+		    let q1_8 = 8.0 * self.q.1;
+		    let q2_8 = 8.0 * self.q.2;
+
+            let q0q0 = self.q.0 * self.q.0;
+            let q1q1 = self.q.1 * self.q.1;
+            let q2q2 = self.q.2 * self.q.2;
+            let q3q3 = self.q.3 * self.q.3;
+
+            let mut s0 = q0_4 * q2q2 + q2.2 * a.x + q0_4 * q1q1 - q2.1 * a.y;
+            let mut s1 = q1_4 * q3q3 - q2.3 * a.x + 4.0 * q0q0 * self.q.1 - q2.0 * a.y - q1_4 + q1_8 * q1q1 + q1_8 * q2q2 + q1_4 * a.z;
+            let mut s2 = 4.0 * q0q0 * self.q.2 + q2.0 * a.x + q2_4 * q3q3 - q2.3 * a.y - q2_4 + q2_8 * q1q1 + q2_8 * q2q2 + q2_4 * a.z;
+            let mut s3 = 4.0 * q1q1 * self.q.3 - q2.1 * a.x + 4.0 * q2q2 * self.q.3 - q2.2 * a.y;
+
+            let recip_norm = rsqrt(s0 * s0 + s1 * s1 + s2 * s2 + s3 * s3);
+            s0 *= recip_norm;
+            s1 *= recip_norm;
+            s2 *= recip_norm;
+            s3 *= recip_norm;
+
+            q_dot.0 -= self.beta * s0;
+            q_dot.1 -= self.beta * s1;
+            q_dot.2 -= self.beta * s2;
+            q_dot.3 -= self.beta * s3;
+        }
+
+        self.q.0 += q_dot.0 * self.sample_period;
+        self.q.1 += q_dot.1 * self.sample_period;
+        self.q.2 += q_dot.2 * self.sample_period;
+        self.q.3 += q_dot.3 * self.sample_period;
+
+        // normalize the quaternion
+        self.q *= rsqrt(self.q.norm());
+
+        self.q
+    }
+
     /// Updates the MARG filter and returns the current estimate of the 3D orientation
     ///
     /// - `m`, magnetic north / magnetometer readings
