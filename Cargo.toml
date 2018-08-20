@@ -5,10 +5,13 @@ description = "Madgwick's orientation filter"
 documentation = "https://docs.rs/madgwick"
 keywords = ["MARG", "IMU", "orientation", "filter"]
 license = "MIT OR Apache-2.0"
-name = "madgwick"
-repository = "https://github.com/japaric/madgwick"
+name = "madgwick" # rename and publish alt-
+repository = "https://github.com/copterust/madgwick"
 version = "0.1.1"
 
 [dependencies]
 libm = "0.1.2"
-mat = "0.2.0"
+
+[dependencies.nalgebra]
+default-features = false
+version = "0.16.0"
