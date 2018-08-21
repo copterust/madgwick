@@ -106,15 +106,14 @@ impl Marg {
     /// Updates the MARG filter and returns the current estimate of the 3D orientation
     ///
     /// - `m`, magnetic north / magnetometer readings
-    /// - `ar`, angular rate / gyroscope readings (unit: rad / s)
-    /// - `g`, gravity vector / accelerometer readings
+    /// - `g`, angular rate / gyroscope readings (unit: rad / s)
+    /// - `a`, gravity vector / accelerometer readings
     // This implements the block diagram in figure 3, minus the gyroscope drift compensation
-    pub fn update(&mut self, mut m: Vector3<f32>, ar: Vector3<f32>, g: Vector3<f32>) -> Quaternion<f32> {
-        // the report calls the accelerometer reading `a`; let's follow suit
-        let mut a = g;
+    pub fn update(&mut self, mut m: Vector3<f32>, g: Vector3<f32>, a: Vector3<f32>) -> Quaternion<f32> {
+        let mut a = a;
 
         // vector of angular rates
-        let omega = Quaternion::new(0., ar.x, ar.y, ar.z);
+        let omega = Quaternion::new(0., g.x, g.y, g.z);
 
         // rate of change of quaternion from gyroscope (Eq 11)
         let mut dqdt = 0.5 * self.q * omega;
