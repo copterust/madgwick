@@ -37,7 +37,7 @@ impl Marg {
     pub fn new(beta: f32, sample_period: f32) -> Self {
         Marg {
             beta,
-            q: Quaternion::new(0.0, 0.0, 0.0, 1.0),
+            q: Quaternion::new(1.0, 0.0, 0.0, 0.0),
             sample_period,
         }
     }
@@ -58,7 +58,7 @@ impl Marg {
         let mut a = a;
         if !((0.0 == a.x) && (0.0 == a.y) && (0.0 == a.z)) {
             // Normalise accelerometer measurement
-            a *= rsqrt(a.norm());
+            a *= rsqrt(a.norm_squared());
             let q2 = self.q * 2.0;
 
             let q0_4 = 4.0 * self.q.w;
@@ -98,7 +98,7 @@ impl Marg {
         self.q += q_dot * self.sample_period;
 
         // normalize the quaternion
-        self.q *= rsqrt(self.q.norm());
+        self.q *= rsqrt(self.q.norm_squared());
 
         self.q
     }
@@ -120,8 +120,8 @@ impl Marg {
         let mut dqdt = 0.5 * self.q * omega;
 
         // normalize orientation vectors
-        a *= rsqrt(a.norm());
-        m *= rsqrt(m.norm());
+        a *= rsqrt(a.norm_squared());
+        m *= rsqrt(m.norm_squared());
 
         // direction of the earth's magnetic field (Eq. 45 & 46)
         let h = self.q * Quaternion::new(0., m.x, m.y, m.z) * self.q.conjugate();
@@ -183,7 +183,7 @@ impl Marg {
 
         // normalize (beware of division by zero!)
         if nabla_f != Quaternion::new(0., 0., 0., 0.) {
-            nabla_f *= rsqrt(nabla_f.norm());
+            nabla_f *= rsqrt(nabla_f.norm_squared());
 
             // update dqqt (Eq. 43)
             dqdt -= self.beta * nabla_f;
@@ -193,7 +193,7 @@ impl Marg {
         self.q += dqdt * self.sample_period;
 
         // normalize the quaternion
-        self.q *= rsqrt(self.q.norm());
+        self.q *= rsqrt(self.q.norm_squared());
 
         self.q
     }
