@@ -17,7 +17,8 @@ extern crate libm;
 extern crate nalgebra as na;
 
 // use core::ops;
-use na::{Matrix3x4, Quaternion, Vector3};
+pub use na::{Quaternion, Vector3};
+use na::Matrix3x4;
 
 use libm::F32Ext;
 
